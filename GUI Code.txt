@@ -1,0 +1,108 @@
+import tkinter as tk
+from tkinter import messagebox
+import numpy as np
+import joblib
+import os
+from sklearn.ensemble import AdaBoostRegressor
+
+# Load the XGB model
+model_path = 'C:/Users/abdou/desktop/XGB1.Joblib'
+if os.path.exists(model_path):
+    model = joblib.load(model_path)
+else:
+    messagebox.showerror("Error", "Model file not found. Please ensure the model_path is correct.")
+    exit()
+
+# Create the Tkinter window
+root = tk.Tk()
+root.title("Prediction of Load carring capacity")
+
+# Create a canvas for the GUI
+canvas = tk.Canvas(root, width=600, height=680, background='#FFFFFF')
+canvas.pack()
+
+# Adding labels to the root window
+label_title = tk.Label(root, text='Prediction Load carrying Capacity (kN)', font=('Georgia', 16, 'bold','underline'), fg='#FF0000', bg='#FFFFFF')
+canvas.create_window(100, 20, anchor="w", window=label_title)
+
+label_inputdefinetitle = tk.Label(root, text='- Definition of Parameters', font=('Georgia', 14, 'bold'), fg='#000000', bg='#FFFFFF')
+canvas.create_window(20, 50, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X1: Eccentricity (mm)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 80, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X2: Column height (mm)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 105, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X3: Concrete strength of standard cylinder (MPa)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 130, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X4: Area of concrete core (mm^2)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 155, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X5: Area of steel tube (mm^2)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 180, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X6: Yield strength of steel tube (MPa)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 205, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X7: Total thickness of FRP wraps (mm)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 230, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X8: Width of FRP wraps * clear spacing of FPR (mm^2)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 255, anchor="w", window=label_inputdefinetitle)
+
+label_inputdefinetitle = tk.Label(root, text='X9: Elastic modulus of FRP (MPa)', font=('Georgia', 12), fg='#000000', bg='#FFFFFF')
+canvas.create_window(30, 280, anchor="w", window=label_inputdefinetitle)
+
+label_input = tk.Label(root, text='- Input Parameters', font=('Georgia', 14, 'bold'), fg='#000000', bg='#FFFFFF')
+canvas.create_window(20, 310, anchor="w", window=label_input)
+
+# Define input fields
+entry_fields = ['X1', 'X2','X3','X4','X5','X6','X7','X8','X9']
+entries = {}
+for i, field in enumerate(entry_fields, start=1):
+    label = tk.Label(root, text=f'{field}: ', font=('Georgia', 12), fg='#0000FF', bg='#FFFFFF')
+    canvas.create_window(300, 310 + i*28, anchor="w", window=label)
+    entry = tk.Entry(root)
+    canvas.create_window(400, 310 + i*28, window=entry)
+    entries[field] = entry
+
+label_output = tk.Label(root, text='- Output', font=('Georgia', 14, 'bold'), fg='#000000', bg='#FFFFFF')
+canvas.create_window(20, 620, anchor="w", window=label_output)
+
+label_result = tk.Label(root, text='prediction:', font=('Georgia', 14, 'bold'), fg='#FF0000', bg='#FFFFFF')
+canvas.create_window(120, 620, anchor="w", window=label_result)
+
+# Predict button command function
+def predict():
+    # Collect input data
+    input_values = []
+    for field in entry_fields:
+        try:
+            value = float(entries[field].get())
+            if value < 0:
+                raise ValueError("Value must be positive.")
+            input_values.append(value)
+        except ValueError:
+            messagebox.showerror("Error", f"Invalid input for {field}. Please enter a positive numeric value.")
+            return
+
+    # Predict using the loaded model
+    input_data = np.array([input_values])
+    print("Input Data Shape:", input_data.shape)  # Debugging
+    try:
+        prediction = model.predict(input_data)
+        print("Prediction:", prediction)  # Debugging
+        # Display the prediction
+        label_result.config(text=f'Prediction: {prediction[0]:.3f}')
+    except Exception as e:
+        print("Prediction Error:", e)  # Debugging
+        messagebox.showerror("Error", "An error occurred during prediction.")
+
+# Predict button
+predict_button = tk.Button(root, text='Calculate', font=('Arial', 12, 'bold'), command=predict, fg='#FFFFFF',bg='green')
+canvas.create_window(500, 620, window=predict_button)
+
+# Run the Tkinter event loop
+root.mainloop()
